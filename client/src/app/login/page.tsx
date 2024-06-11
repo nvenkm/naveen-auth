@@ -37,7 +37,6 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const [user, setUser] = useRecoilState(userAtom);
-  const api = useAxiosPrivate();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,15 +46,26 @@ const LoginPage = () => {
       rememberMe: false,
     },
   });
+
   useEffect(() => {
     if (user) {
       router.push("/");
     }
   }, [user, router]);
 
+  useEffect(() => {
+    // Load saved credentials from local storage
+    const savedCredentials = localStorage.getItem("rememberedCredentials");
+    if (savedCredentials) {
+      const { email, password } = JSON.parse(savedCredentials);
+      form.setValue("email", email);
+      form.setValue("password", password);
+    }
+  }, []);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const res = await api.post(
+      const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/login`,
         values
       );
@@ -66,6 +76,19 @@ const LoginPage = () => {
         if (!data || typeof data === "string") throw new Error("Invalid token");
         const user = data.payload;
         setUser(user);
+        if (values.rememberMe) {
+          // Save credentials in local storage if "Remember Me" is checked
+          localStorage.setItem(
+            "rememberedCredentials",
+            JSON.stringify({
+              email: values.email,
+              password: values.password,
+            })
+          );
+        } else {
+          // Clear saved credentials from local storage if "Remember Me" is not checked
+          localStorage.removeItem("rememberedCredentials");
+        }
         router.push("/");
       }
     } catch (error) {
@@ -75,6 +98,7 @@ const LoginPage = () => {
       console.log(error);
     }
   }
+
   return (
     <div className="flex flex-col items-center">
       <div className="mt-6">
@@ -95,59 +119,46 @@ const LoginPage = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      className="bg-white"
-                      placeholder="abcd@efg.com"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Input
+                    className="bg-white"
+                    placeholder="abcd@efg.com"
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
-            ></FormField>
+            />
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      className="bg-white"
-                      placeholder="Password..."
-                      {...field}
-                    />
-                  </FormControl>
+                  <Input
+                    type="password"
+                    className="bg-white"
+                    placeholder="Password..."
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
-            ></FormField>
+            />
             <FormField
               control={form.control}
               name="rememberMe"
               render={({ field }) => (
                 <FormItem className="flex items-center">
-                  <FormControl>
-                    <Checkbox
-                      className="bg-white"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel
-                    style={{
-                      marginTop: 0,
-                    }}
-                    className="ml-2 mt-0"
-                  >
-                    Remember Me
-                  </FormLabel>
+                  <Checkbox
+                    className="bg-white"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                  <FormLabel className="ml-2">Remember Me</FormLabel>
                   <FormMessage />
                 </FormItem>
               )}
-            ></FormField>
+            />
             <Button type="submit">Submit</Button>
           </form>
         </Form>
