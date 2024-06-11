@@ -3,18 +3,15 @@
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRecoilState } from "recoil";
 
 export default function Home() {
   const [user] = useRecoilState(userAtom);
   const [loading] = useRecoilState(loadingAtom);
   const router = useRouter();
-
-  console.log("User from homepage:", user);
-
   useEffect(() => {
-    if (!user) {
+    if (!user && !loading) {
       router.push("/login");
     }
   }, [user]);
@@ -26,7 +23,9 @@ export default function Home() {
           <Loader2 width={40} height={40} className="text-3xl animate-spin" />
         </div>
       ) : (
-        <p>Hi, {user?.fullName}</p>
+        <div>
+          <p>Hi, {user?.fullName}</p>
+        </div>
       )}
     </main>
   );

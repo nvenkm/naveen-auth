@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -35,7 +35,7 @@ const formSchema = z.object({
 });
 
 const LoginPage = () => {
-  const [, setUser] = useRecoilState(userAtom);
+  const [user, setUser] = useRecoilState(userAtom);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,6 +45,11 @@ const LoginPage = () => {
       rememberMe: false,
     },
   });
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {

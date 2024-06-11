@@ -19,11 +19,13 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const data = jwt.decode(token);
     if (!data || typeof data === "string") {
+      setLoading(false);
       router.push("/login");
       return;
     }
     const user = data.payload;
     if (!user) {
+      setLoading(false);
       router.push("/login");
       return;
     }

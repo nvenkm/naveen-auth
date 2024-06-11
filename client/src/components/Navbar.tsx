@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { useRecoilState } from "recoil";
 
 const Navbar = () => {
   const [user, setUser] = useRecoilState(userAtom);
-  const [loading] = useRecoilState(loadingAtom);
+  const [loading, setLoading] = useRecoilState(loadingAtom);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   function handleLogout() {
+    setIsLoggingOut(true);
     localStorage.removeItem("token");
     setUser(null);
+    setLoading(false); // Ensure loading state is updated correctly
+    setIsLoggingOut(false);
   }
 
   console.log("User in navbar:", user);
