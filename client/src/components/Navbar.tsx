@@ -7,8 +7,13 @@ import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { useRecoilState } from "recoil";
 
 const Navbar = () => {
-  const [user] = useRecoilState(userAtom);
+  const [user, setUser] = useRecoilState(userAtom);
   const [loading] = useRecoilState(loadingAtom);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setUser(null);
+  }
 
   console.log("User in navbar:", user);
   return (
@@ -31,7 +36,7 @@ const Navbar = () => {
                 </Button>
               </ul>
             ) : (
-              <Button>Logout</Button>
+              <Button onClick={handleLogout}>Logout</Button>
             )}
           </div>
         )}

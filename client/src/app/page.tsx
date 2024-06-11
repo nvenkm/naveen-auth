@@ -2,14 +2,22 @@
 
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 export default function Home() {
   const [user] = useRecoilState(userAtom);
   const [loading] = useRecoilState(loadingAtom);
+  const router = useRouter();
 
   console.log("User from homepage:", user);
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+    }
+  }, [user]);
 
   return (
     <main className="flex flex-col items-center justify-between p-24">
