@@ -26,8 +26,18 @@ const generateToken = (payload: any, expiry: string, secret: string) => {
 
 async function registerUser(req: Request, res: Response) {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, recaptchaToken } = req.body;
 
+    const recaptchaResponse = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${recaptchaToken}`
+    );
+
+    if (!recaptchaResponse.data.success) {
+      return res.status(400).json({
+        message: "Captcha verification failed",
+        success: false,
+      });
+    }
     //validate user input
     const result = UserSchema.safeParse({ fullName, email, password });
 
@@ -124,7 +134,6 @@ async function verifyUser(req: Request, res: Response) {
     if (!decoded) {
       return res.status(401).json({ success: false, message: "Invalid token" });
     }
-    console.log("Decoded:", decoded);
 
     const { payload } = decoded as { payload: string };
     const user = await User.findById(payload);
@@ -160,8 +169,6 @@ async function loginUser(req: Request, res: Response) {
   const recaptchaResponse = await axios.post(
     `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${recaptchaToken}`
   );
-
-  console.log(recaptchaResponse.data);
 
   if (!recaptchaResponse.data.success) {
     return res.status(400).json({
@@ -282,7 +289,6 @@ async function refresh(req: AuthRequest, res: Response) {
         message: "Unauthorized",
       });
     } else {
-      console.log(decoded);
       const _id = decoded.payload;
 
       const user = await User.findById(_id);

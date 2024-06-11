@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import RecaptchaComponent from "@/components/Recaptcha";
 
 const formSchema = z
   .object({
@@ -46,6 +47,7 @@ const RegisterPage = () => {
   const router = useRouter();
   const api = useAxiosPrivate();
   const [isLoading, setIsLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,9 +64,13 @@ const RegisterPage = () => {
     // ✅ This will be type-safe and validated.
     try {
       setIsLoading(true);
+      if (!recaptchaToken) {
+        toast.error("Please verify that you are not a robot");
+        return;
+      }
       const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/register`,
-        values
+        { ...values, recaptchaToken }
       );
 
       if (res.data.success) {
@@ -88,9 +94,9 @@ const RegisterPage = () => {
   }
   return (
     <div className="flex flex-col items-center">
-      <div className="mt-6">
+      <div className="mt-2">
         <h1 className=" text-4xl font-bold text-center">Register</h1>
-        <p className="text-center my-4">
+        <p className="text-center my-2">
           To get started, you need to signup here.
         </p>
       </div>
@@ -98,7 +104,7 @@ const RegisterPage = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 min-w-96 bg-white p-5 rounded-md border shadow-sm"
+            className="space-y-2 min-w-96 bg-white p-5 rounded-md border shadow-sm"
           >
             <FormField
               control={form.control}
@@ -181,6 +187,12 @@ const RegisterPage = () => {
               )}
               Submit
             </Button>
+            <RecaptchaComponent
+              onChange={(val: string | null) => {
+                if (val) setRecaptchaToken(val);
+                console.log(val);
+              }}
+            />
           </form>
         </Form>
       </div>
