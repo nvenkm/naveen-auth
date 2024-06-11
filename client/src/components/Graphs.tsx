@@ -8,7 +8,7 @@ Chart.register(CategoryScale);
 const Graphs = () => {
   return (
     <div className="w-full flex justify-center gap-3 m-3 ">
-      <div className="w-[80%] flex justify-center">
+      <div className="w-[64%] flex justify-center">
         <Bar
           data={{
             labels: expenses.map((expense) => expense.category),
