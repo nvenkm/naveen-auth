@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { sendVerificationEmail } from "../utils/sendEmail";
+import { AuthRequest } from "../middlewares/authMiddleware";
 
 const UserSchema = z.object({
   fullName: z.string().min(2, "Username must be at least 2 characters"),
@@ -209,4 +210,31 @@ async function loginUser(req: Request, res: Response) {
     });
 }
 
-export { registerUser, loginUser, verifyUser };
+async function logoutUser(req: AuthRequest, res: Response) {
+  try {
+    User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        refreshToken: undefined,
+      },
+      { new: true }
+    );
+
+    res
+      .status(200)
+      .clearCookie("refreshToken")
+      .clearCookie("accessToken")
+      .json({
+        success: true,
+        message: "User logged out successfully",
+      });
+  } catch (error) {
+    console.error("Error logging out user:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+}
+
+export { loginUser, logoutUser, verifyUser, registerUser };

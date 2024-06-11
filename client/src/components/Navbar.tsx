@@ -18,8 +18,6 @@ const Navbar = () => {
     setLoading(false); // Ensure loading state is updated correctly
     setIsLoggingOut(false);
   }
-
-  console.log("User in navbar:", user);
   return (
     <nav className=" bg-slate-50 py-4">
       <div className="mx-24 flex items-center text-xl justify-between">

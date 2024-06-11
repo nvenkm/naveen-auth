@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 export interface userInterface {
+  _id: string;
   fullName: string;
   email: string;
   password: string;

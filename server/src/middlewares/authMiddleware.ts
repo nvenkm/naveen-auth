@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { userInterface } from "../models/userModel";
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: userInterface;
 }
 
@@ -12,20 +12,24 @@ export const isAuth = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token =
+      req.headers.authorization?.split(" ")[1] || req.cookies?.accessToken;
 
     if (!token) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      _id: string;
-    };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+
+    console.log(decoded);
+
     if (!decoded || typeof decoded === "string") {
-      return res.status(401).json({ success: false, message: "Invalid token" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid ttoken" });
     }
 
-    const user = await User.findById(decoded._id).select(
+    const user = await User.findById(decoded.payload._id).select(
       "-password -refreshToken"
     );
     if (!user) {

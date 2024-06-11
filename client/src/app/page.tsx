@@ -1,5 +1,6 @@
 "use client";
 
+import Graph from "@/components/Graph";
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ export default function Home() {
       {user ? (
         <div>
           <p>Hi, {user.fullName}</p>
+          <Graph />
         </div>
       ) : (
         <div>
