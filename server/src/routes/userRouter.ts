@@ -2,6 +2,7 @@ import express from "express";
 import {
   loginUser,
   logoutUser,
+  refresh,
   registerUser,
   verifyUser,
 } from "../controller/userController";
@@ -17,3 +18,5 @@ userRouter.post("/login", loginUser);
 userRouter.post("/verify", verifyUser);
 
 userRouter.post("/logout", isAuth, logoutUser);
+
+userRouter.post("/refresh", refresh);

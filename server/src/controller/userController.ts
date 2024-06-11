@@ -17,8 +17,8 @@ const SigninSchema = z.object({
   password: z.string().min(6, "Password must contain at least 6 characters"),
 });
 
-const generateToken = (payload: any, expiry: string) => {
-  return jwt.sign({ payload }, process.env.JWT_SECRET!, {
+const generateToken = (payload: any, expiry: string, secret: string) => {
+  return jwt.sign({ payload }, secret, {
     expiresIn: expiry,
   });
 };
@@ -53,7 +53,11 @@ async function registerUser(req: Request, res: Response) {
       await existingUser.save();
 
       //generate new token
-      const token = generateToken(existingUser._id, "1h");
+      const token = generateToken(
+        existingUser._id,
+        process.env.ACCESS_TOKEN_EXPIRY!,
+        process.env.JWT_SECRET!
+      );
       const { success } = await sendVerificationEmail(
         existingUser.email,
         existingUser.fullName,
@@ -83,7 +87,11 @@ async function registerUser(req: Request, res: Response) {
     const savedUser = await newUser.save();
 
     //temporary token for email verification
-    const token = generateToken(savedUser._id, "1h");
+    const token = generateToken(
+      savedUser._id,
+      process.env.ACCESS_TOKEN_EXPIRY!,
+      process.env.JWT_SECRET!
+    );
 
     const { success } = await sendVerificationEmail(email, fullName, token);
 
@@ -187,11 +195,13 @@ async function loginUser(req: Request, res: Response) {
 
   const accessToken = generateToken(
     responseUser,
-    process.env.ACCESS_TOKEN_EXPIRY!
+    process.env.ACCESS_TOKEN_EXPIRY!,
+    process.env.JWT_SECRET!
   );
   const refreshToken = generateToken(
     user._id,
-    process.env.REFRESH_TOKEN_EXPIRY!
+    process.env.REFRESH_TOKEN_EXPIRY!,
+    process.env.REFRESH_TOKEN_SECRET!
   );
 
   user.refreshToken = refreshToken;
@@ -237,4 +247,80 @@ async function logoutUser(req: AuthRequest, res: Response) {
   }
 }
 
-export { loginUser, logoutUser, verifyUser, registerUser };
+async function refresh(req: AuthRequest, res: Response) {
+  try {
+    const recievedToken = req.cookies.refreshToken;
+
+    if (!recievedToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const decoded = jwt.verify(
+      recievedToken,
+      process.env.REFRESH_TOKEN_SECRET!
+    );
+    if (!decoded || typeof decoded === "string") {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    } else {
+      const _id = decoded.payload._id;
+
+      const user = await User.findById(_id);
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      if (recievedToken !== user.refreshToken) {
+        return res.status(401).json({
+          success: false,
+          message: "Refresh token is invalid",
+        });
+
+        //generate new tokens
+      }
+      const newAccessToken = generateToken(
+        user,
+        process.env.ACCESS_TOKEN_EXPIRY!,
+        process.env.JWT_SECRET!
+      );
+
+      const newRefreshToken = generateToken(
+        user._id,
+        process.env.REFRESH_TOKEN_EXPIRY!,
+        process.env.REFRESH_TOKEN_SECRET!
+      );
+      user.refreshToken = newRefreshToken;
+      await user.save();
+
+      res
+        .status(200)
+        .cookie("refreshToken", newRefreshToken, {
+          httpOnly: true,
+          secure: true,
+        })
+        .cookie("accessToken", newAccessToken, { httpOnly: true, secure: true })
+        .json({
+          success: true,
+          message: "User logged in successfully",
+          newAccessToken,
+        });
+    }
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+export { loginUser, logoutUser, verifyUser, registerUser, refresh };
