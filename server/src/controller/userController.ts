@@ -268,7 +268,8 @@ async function refresh(req: AuthRequest, res: Response) {
         message: "Unauthorized",
       });
     } else {
-      const _id = decoded.payload._id;
+      console.log(decoded);
+      const _id = decoded.payload;
 
       const user = await User.findById(_id);
 
@@ -310,7 +311,7 @@ async function refresh(req: AuthRequest, res: Response) {
         .cookie("accessToken", newAccessToken, { httpOnly: true, secure: true })
         .json({
           success: true,
-          message: "User logged in successfully",
+          message: "Refreshed successfully",
           newAccessToken,
         });
     }
