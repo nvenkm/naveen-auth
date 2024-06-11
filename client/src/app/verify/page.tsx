@@ -4,17 +4,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { Loader, Loader2 } from "lucide-react";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 const VerifyPage = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const api = useAxiosPrivate();
 
   useEffect(() => {
     async function verify() {
       try {
         setIsLoading(true);
-        const res = await axios.post(
+        const res = await api.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/verify`,
           {
             token: token,

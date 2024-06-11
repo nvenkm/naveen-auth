@@ -5,18 +5,37 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { useRecoilState } from "recoil";
+import axios from "axios";
+import toast from "react-hot-toast";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 const Navbar = () => {
   const [user, setUser] = useRecoilState(userAtom);
   const [loading, setLoading] = useRecoilState(loadingAtom);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const api = useAxiosPrivate();
+  async function handleLogout() {
+    try {
+      setLoading(true);
+      setIsLoggingOut(true);
+      const res = await api.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/logout`
+      );
 
-  function handleLogout() {
-    setIsLoggingOut(true);
-    localStorage.removeItem("token");
-    setUser(null);
-    setLoading(false); // Ensure loading state is updated correctly
-    setIsLoggingOut(false);
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      toast.success(res.data.message);
+
+      localStorage.removeItem("token");
+      setUser(null);
+    } catch (error) {
+    } finally {
+      setLoading(false);
+      setIsLoggingOut(false);
+    }
   }
   return (
     <nav className=" bg-slate-50 py-4">

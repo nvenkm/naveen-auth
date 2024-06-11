@@ -15,6 +15,8 @@ export const isAuth = async (
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies?.accessToken;
 
+    console.log("Cookies", req.cookies);
+
     if (!token) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }

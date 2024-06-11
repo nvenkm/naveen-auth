@@ -20,6 +20,7 @@ import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 const formSchema = z
   .object({
@@ -43,6 +44,7 @@ const formSchema = z
 
 const RegisterPage = () => {
   const router = useRouter();
+  const api = useAxiosPrivate();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -60,7 +62,7 @@ const RegisterPage = () => {
     // ✅ This will be type-safe and validated.
     try {
       setIsLoading(true);
-      const res = await axios.post(
+      const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/register`,
         values
       );

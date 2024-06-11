@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import jwt from "jsonwebtoken";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import {
   Form,
   FormControl,
@@ -36,6 +37,7 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const [user, setUser] = useRecoilState(userAtom);
+  const api = useAxiosPrivate();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,7 +55,7 @@ const LoginPage = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/login`,
         values
       );
