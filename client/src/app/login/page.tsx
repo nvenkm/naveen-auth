@@ -1,6 +1,13 @@
 "use client";
-import React, { useEffect } from "react";
-
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,6 +31,7 @@ import toast from "react-hot-toast";
 import { useRecoilState } from "recoil";
 import { userAtom } from "@/state-machine/atoms";
 import { useRouter } from "next/navigation";
+import RecaptchaComponent from "@/components/Recaptcha";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -37,7 +45,10 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const [user, setUser] = useRecoilState(userAtom);
+  const api = useAxiosPrivate();
   const router = useRouter();
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,9 +76,13 @@ const LoginPage = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const res = await axios.post(
+      if (!recaptchaToken) {
+        toast.error("Please verify that you are not a robot");
+        return;
+      }
+      const res = await api.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/login`,
-        values
+        { ...values, recaptchaToken }
       );
       if (res.data.success) {
         toast.success(res.data.message);
@@ -107,7 +122,7 @@ const LoginPage = () => {
           To get started, you need to signup here.
         </p>
       </div>
-      <div>
+      <div className="flex flex-col gap-4 items-center justify-center">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -160,6 +175,12 @@ const LoginPage = () => {
               )}
             />
             <Button type="submit">Submit</Button>
+            <RecaptchaComponent
+              onChange={(val: string | null) => {
+                if (val) setRecaptchaToken(val);
+                console.log(val);
+              }}
+            />
           </form>
         </Form>
       </div>

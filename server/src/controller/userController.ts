@@ -5,6 +5,7 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { sendVerificationEmail } from "../utils/sendEmail";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import axios from "axios";
 
 const UserSchema = z.object({
   fullName: z.string().min(2, "Username must be at least 2 characters"),
@@ -154,7 +155,20 @@ async function verifyUser(req: Request, res: Response) {
 }
 
 async function loginUser(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { email, password, recaptchaToken } = req.body;
+
+  const recaptchaResponse = await axios.post(
+    `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${recaptchaToken}`
+  );
+
+  console.log(recaptchaResponse.data);
+
+  if (!recaptchaResponse.data.success) {
+    return res.status(400).json({
+      message: "Captcha verification failed",
+      success: false,
+    });
+  }
 
   const validate = SigninSchema.safeParse({ email, password });
   if (!validate.success) {
