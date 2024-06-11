@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z
   .object({
@@ -42,6 +43,7 @@ const formSchema = z
 
 const RegisterPage = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,6 +59,7 @@ const RegisterPage = () => {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     try {
+      setIsLoading(true);
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/register`,
         values
@@ -77,6 +80,8 @@ const RegisterPage = () => {
         toast.error(error.response?.data.message);
       }
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   }
   return (
@@ -165,7 +170,15 @@ const RegisterPage = () => {
                 </FormItem>
               )}
             ></FormField>
-            <Button type="submit">Submit</Button>
+            <Button type="submit">
+              {" "}
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                ""
+              )}
+              Submit
+            </Button>
           </form>
         </Form>
       </div>

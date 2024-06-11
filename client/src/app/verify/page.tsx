@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { Loader, Loader2 } from "lucide-react";
 const VerifyPage = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -37,7 +38,19 @@ const VerifyPage = () => {
     verify();
   }, []);
 
-  return <div>{isLoading ? <div>Loading...</div> : <div>Verified</div>}</div>;
+  return (
+    <div className="flex items-center justify-center mt-10">
+      {isLoading ? (
+        <div className="flex gap-4 text-xl">
+          {" "}
+          <Loader2 className="animate-spin" /> Please wait while we verifty your
+          account...
+        </div>
+      ) : (
+        <div className="flex gap-4 text-xl">Verified</div>
+      )}
+    </div>
+  );
 };
 
 export default VerifyPage;
