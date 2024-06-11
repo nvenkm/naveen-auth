@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -67,8 +67,17 @@ const RegisterPage = () => {
         form.reset();
       }
 
+      if (!res.data.success) {
+        toast.error(res.data.message);
+      }
+
       console.log(res.data.success);
-    } catch (error) {}
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      }
+      console.log(error);
+    }
   }
   return (
     <div className="flex flex-col items-center">
