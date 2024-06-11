@@ -165,12 +165,14 @@ const RegisterPage = () => {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input
                       className="bg-white"
                       type="password"
                       placeholder="Confirm Password..."
+                      autoSave="off"
+                      autoComplete="off"
                       {...field}
                     />
                   </FormControl>
