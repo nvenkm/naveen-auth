@@ -29,6 +29,7 @@ const VerifyPage = () => {
         if (error instanceof AxiosError) {
           toast.error(error.response?.data.message);
         }
+        router.push("/");
         console.log(error);
       } finally {
         setIsLoading(false);
