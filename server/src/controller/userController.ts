@@ -206,7 +206,6 @@ async function loginUser(req: Request, res: Response) {
       user: responseUser,
       message: "User logged in successfully",
       accessToken,
-      refreshToken,
     });
 }
 

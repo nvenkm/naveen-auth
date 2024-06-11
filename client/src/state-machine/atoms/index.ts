@@ -8,7 +8,7 @@ interface User {
 
 export const loadingAtom = atom<boolean>({
   key: "loading",
-  default: false,
+  default: true,
 });
 
 export const verifyTokenAtom = atom<string | null>({

@@ -22,6 +22,7 @@ import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useRecoilState } from "recoil";
 import { userAtom } from "@/state-machine/atoms";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -35,6 +36,7 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const [, setUser] = useRecoilState(userAtom);
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,6 +59,7 @@ const LoginPage = () => {
         if (!data || typeof data === "string") throw new Error("Invalid token");
         const user = data.payload;
         setUser(user);
+        router.push("/");
       }
     } catch (error) {
       if (error instanceof AxiosError) {
