@@ -1,6 +1,6 @@
 "use client";
 
-import Graph from "@/components/Graph";
+import Graphs from "@/components/Graphs";
 import { loadingAtom, userAtom } from "@/state-machine/atoms";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,12 +27,16 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-between p-24">
+    <main className="flex flex-col justify-between ">
       {user ? (
-        <div>
-          <p>Hi, {user.fullName}</p>
-          <Graph />
-        </div>
+        <>
+          <div>
+            <p className="m-5 text-4xl font-extrabold">Hi, {user.fullName}</p>
+          </div>
+          <div>
+            <Graphs />
+          </div>
+        </>
       ) : (
         <div>
           {/* Render nothing or a placeholder until user state is resolved */}
